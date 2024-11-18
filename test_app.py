@@ -1,14 +1,15 @@
 import unittest
-from unittest.mock import patch, Mock
-from app import app, getmoviedetails, get_country_flag
+from unittest.mock import patch
+from app import app, init_db  # Importa la app y la función init_db
 
 class MovieWithFlagAppTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Set up a Flask test client for the entire test class
+        """Se ejecuta una sola vez para toda la clase de pruebas."""
         cls.client = app.test_client()
         app.config['TESTING'] = True
+        init_db()  # Inicializa la base de datos antes de ejecutar cualquier prueba
 
     def notest_integration(self):
         response = self.client.get("/api/movies?filter=superman")
@@ -31,15 +32,13 @@ class MovieWithFlagAppTestCase(unittest.TestCase):
             "Year": "1980",
             "Country": "United States, United Kingdom, Canada, France",
         }
-        mock_searchfilms.return_value = {
-            "Search": [
-                {
+        mock_searchfilms.return_value = [
+            {
                 "Title": "Superman II",
                 "Year": "1980",
                 "imdbID": "tt0081573"
-                }
-            ]
-        }
+            }
+        ]
 
         response = self.client.get("/api/movies?filter=superman")
         self.assertEqual(response.status_code, 200)
@@ -90,3 +89,6 @@ class MovieWithFlagAppTestCase(unittest.TestCase):
             self.assertEqual(movie["countries"][1]["flag"], "https://flagcdn.com/us.svg")
             self.assertEqual(movie["countries"][2]["flag"], "https://flagcdn.com/us.svg")
             self.assertEqual(movie["countries"][3]["flag"], "https://flagcdn.com/us.svg")
+
+if __name__ == "__main__":
+    unittest.main()
